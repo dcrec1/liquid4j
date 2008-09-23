@@ -19,23 +19,13 @@ public class Template {
 	public String render(Map map) {
 		try {
 			Object result;
+			Object hash = null;
 			if (map != null) {
-				Object hash = invocable.invokeFunction("to_hash", map);
-				result = invocable.invokeMethod(liquid, "render", hash);
-			} else {
-				result = invocable.invokeMethod(liquid, "render");
+				hash = invocable.invokeFunction("to_hash", map);
 			}
-			return (String) result;
-		} catch (ScriptException e) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("executing method render with following hash:");
-			for (Object key : map.keySet()) {
-				sb.append("\n" + key.toString() + " => " + map.get(key));
-			}
-			throw new RuntimeException(sb.toString());
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(
-					"method render doest not exists for Liquid template");
+			return (String) invocable.invokeFunction("render", liquid, hash);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 

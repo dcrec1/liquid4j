@@ -3,10 +3,13 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.12.jar"/>
 	<classpathentry kind="lib" path="lib/jruby.jar"/>
 	<classpathentry kind="lib" path="lib/jruby-engine.jar"/>
 	<classpathentry kind="lib" path="lib/mosju.jar"/>
+	<classpathentry kind="lib" path="lib/rhyme.jar"/>
+	<classpathentry kind="lib" path="lib/emma.jar"/>
+	<classpathentry kind="lib" path="lib/emma_ant.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

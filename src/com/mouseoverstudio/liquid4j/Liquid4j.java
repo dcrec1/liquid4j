@@ -10,6 +10,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
+import com.mouseoverstudio.rhyme.Rhyme;
+
 public class Liquid4j {
 
 	private static final String FUNCTION_NAME = "parse";
@@ -21,14 +23,11 @@ public class Liquid4j {
 		engine = jruby();
 		try {
 			engine.eval(readerOf("com/mouseoverstudio/liquid4j/liquid4j.rb"));
-			try {
-				compiledScript = ((Compilable) engine).compile(FUNCTION_NAME
-						+ "()");
-			} catch (ScriptException e) {
-				throw new RuntimeException("compiling render function");
-			}
+			compiledScript = ((Compilable) engine)
+					.compile(FUNCTION_NAME + "()");
+			Rhyme.require("liquid");
 		} catch (ScriptException e) {
-			throw new RuntimeException("evaluating ruby script");
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -38,8 +37,7 @@ public class Liquid4j {
 		try {
 			return new Template(compiledScript.eval(context), engine);
 		} catch (ScriptException e) {
-			throw new RuntimeException("evaluating " + FUNCTION_NAME
-					+ " function with text: " + text);
+			throw new RuntimeException(e);
 		}
 	}
 

@@ -1,0 +1,124 @@
+<project name="liquid4j" basedir="." default="package">
+
+	<!--  Project directories  -->
+	<property name="src.dir" value="src"></property>
+	<property name="bin.dir" value="bin"></property>
+	<property name="test.dir" value="test"></property>
+	<property name="lib.dir" value="lib"></property>
+	<property name="jruby.dir" value="/usr/local/bin/jruby"></property>
+
+	<!-- Emma directories -->
+	<property name="emma.bin.dir" value="emma/bin"></property>
+	<property name="emma.metadata.dir" value="emma/metadata"></property>
+	<property name="emma.report.dir" value="emma/report"></property>
+
+	<!-- Test suits -->
+	<property name="suit.tests" value="com.mouseoverstudio.liquid4j.test.Liquid4jTest"></property>
+
+	<!-- Should emma be executed? -->
+	<property name="emma.shouldRun" value="true"></property>
+
+	<!-- Project classpath -->
+	<path id="project.classpath">
+		<pathelement location="${bin.dir}"></pathelement>
+		<fileset dir="${lib.dir}">
+			<include name="*.jar"></include>
+		</fileset>
+	</path>
+
+	<!-- Emma tasks -->
+	<taskdef resource="emma_ant.properties">
+		<classpath refid="project.classpath"></classpath>
+	</taskdef>
+
+	<!-- JUnit tasks -->
+	<taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
+		<classpath refid="project.classpath"></classpath>
+	</taskdef>
+
+	<!-- Inits bin directory -->
+	<target name="init">
+		<delete dir="${bin.dir}"></delete>
+		<mkdir dir="${bin.dir}"></mkdir>
+	</target>
+
+	<!-- Source compilation -->
+	<target name="compileSource" depends="init">
+		<javac debug="on" srcdir="${src.dir}" destdir="${bin.dir}">
+			<classpath refid="project.classpath"></classpath>
+		</javac>
+		<copy todir="${bin.dir}">
+			<fileset dir="${src.dir}">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- Emma instrumentation -->
+	<target name="instrument" depends="compileSource">
+		<emma enabled="${emma.shouldRun}">
+			<instr instrpath="${bin.dir}" destdir="${emma.bin.dir}" 
+					metadatafile="${emma.metadata.dir}/metadata.emma" 
+					merge="false" mode="fullcopy">
+			</instr>
+		</emma>
+	</target>
+
+	<!-- Tests compilation -->
+	<target name="compileTests">
+		<javac debug="on" srcdir="${test.dir}" destdir="${bin.dir}">
+			<classpath refid="project.classpath"></classpath>
+		</javac>
+		<copy todir="${bin.dir}">
+			<fileset dir="${test.dir}">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- Execut tests against emma instrumented classes -->
+	<target name="test" depends="instrument, compileTests">
+		<junit haltonfailure="false" haltonerror="false" fork="true">
+			<classpath>
+				<pathelement location="${emma.bin.dir}/classes"></pathelement>
+				<pathelement location="${emma.bin.dir}/lib"></pathelement>
+				<path refid="project.classpath"></path>
+			</classpath>
+			<formatter type="plain" usefile="false"></formatter>
+			<test name="${suit.tests}"></test>
+			
+			<jvmarg value="-Djruby.home=${jruby.dir}" />
+			<jvmarg value="-Djruby.lib=${jruby.dir}/lib" />
+			<jvmarg value="-Djruby.script=jruby" />
+			<jvmarg value="-Djruby.shell=/bin/sh" />
+			<jvmarg value="-Demma.coverage.out.file=${emma.metadata.dir}/coverage.emma" />
+			<jvmarg value="-Demma.coverage.out.merge=false" />
+		</junit>
+	</target>
+
+	<!-- Emma reports -->
+	<target name="emma" depends="test">
+		<delete dir="${emma.report.dir}"></delete>
+		<emma enabled="${emma.shouldRun}">
+			<report sourcepath="${src.dir}" sort="+block,+name,+method,+class" 
+					metrics="method:70,block:80,line:80,class:100">
+				<fileset dir="${emma.metadata.dir}">
+					<include name="*.emma"></include>
+				</fileset>
+				<html outfile="${emma.report.dir}/index.html" />
+			</report>
+		</emma>
+	</target>
+	
+	<target name="package" depends="emma">
+		<jar destfile="dist/liquid4j.jar" basedir="${bin.dir}"/>
+		<antcall target="clean"></antcall>
+	</target>
+	
+	<!-- Cleans the house -->
+	<target name="clean">
+		<delete dir="${emma.bin.dir}"></delete>
+		<delete dir="${emma.metadata.dir}"></delete>
+	</target>
+
+</project>
